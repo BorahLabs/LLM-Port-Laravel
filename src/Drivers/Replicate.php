@@ -2,10 +2,10 @@
 
 namespace Borah\LLMPort\Drivers;
 
-use Borah\LLMPort\ValueObjects\ChatRequest;
-use Borah\LLMPort\ValueObjects\ChatResponse;
 use BenBjurstrom\Replicate\Replicate as ReplicateClient;
 use Borah\LLMPort\ValueObjects\ChatMessage;
+use Borah\LLMPort\ValueObjects\ChatRequest;
+use Borah\LLMPort\ValueObjects\ChatResponse;
 
 class Replicate extends LlmProvider
 {
@@ -13,7 +13,7 @@ class Replicate extends LlmProvider
     {
         $systemMessage = $request->systemMessage();
         $prompt = collect($request->messagesWithoutSystem())
-            ->map(fn (ChatMessage $message) => $message->role->value . ': ' . $message->content)
+            ->map(fn (ChatMessage $message) => $message->role->value.': '.$message->content)
             ->join("\n\n");
 
         $response = $this->client()->predictions()->create($this->model()->name, [
@@ -21,7 +21,7 @@ class Replicate extends LlmProvider
                 'prompt' => $prompt,
                 'system_prompt' => $systemMessage,
                 'max_tokens' => $request->maxTokens ?? 512,
-                'stop_sequences' => is_array($request->stop) ? join(',', $request->stop) : $request->stop,
+                'stop_sequences' => is_array($request->stop) ? implode(',', $request->stop) : $request->stop,
                 'temperature' => $request->temperature ?? 0.7,
                 'top_p' => $request->topP ?? 0.95,
             ],

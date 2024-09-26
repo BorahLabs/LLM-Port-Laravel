@@ -1,13 +1,10 @@
 <?php
 
-use Borah\LLMPort\Drivers\Anthropic;
 use Borah\LLMPort\Drivers\Replicate;
 use Borah\LLMPort\Enums\MessageRole;
 use Borah\LLMPort\ValueObjects\ChatMessage;
 use Borah\LLMPort\ValueObjects\ChatRequest;
-use Borah\LLMPort\ValueObjects\LlmModel;
 use Borah\LLMPort\ValueObjects\ResponseUsage;
-use Illuminate\Support\Collection;
 
 test('can chat', function () {
     $client = new Replicate;
