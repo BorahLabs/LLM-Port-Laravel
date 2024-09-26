@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace Borah\LLMPort\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class LLMPortCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'llm-port-laravel';
 
     public $description = 'My command';
 
