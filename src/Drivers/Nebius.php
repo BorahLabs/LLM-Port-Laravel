@@ -4,6 +4,11 @@ namespace Borah\LLMPort\Drivers;
 
 class Nebius extends OpenAI
 {
+    public function driver(): string
+    {
+        return 'nebius';
+    }
+
     protected function getBaseUri(): ?string
     {
         return 'https://api.studio.nebius.ai/v1';

@@ -17,6 +17,7 @@
     ],
     "require": {
         "php": "^8.2",
+        "benbjurstrom/replicate-php": "^0.3.0",
         "illuminate/contracts": "^10.0||^11.0",
         "lucianotonet/groq-php": "^0.0.9",
         "openai-php/client": "^0.10.1",
