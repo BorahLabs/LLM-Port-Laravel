@@ -33,7 +33,7 @@ class Replicate extends LlmProvider
         ];
 
         if ($request->stop) {
-            $data['stop_sequences'] = is_array($request->stop) ? join(',', $request->stop) : $request->stop;
+            $data['stop_sequences'] = is_array($request->stop) ? implode(',', $request->stop) : $request->stop;
         }
 
         $prediction = $this->client()->predictions()->create($version, $data);
@@ -46,7 +46,8 @@ class Replicate extends LlmProvider
 
         abort_if($prediction->status === 'failed', 500, 'Failed to get prediction');
 
-        $output = is_array($prediction->output) ? join('', $prediction->output) : $prediction->output;
+        $output = is_array($prediction->output) ? implode('', $prediction->output) : $prediction->output;
+
         return new ChatResponse(
             id: $prediction->id,
             content: mb_trim($output),
@@ -65,6 +66,6 @@ class Replicate extends LlmProvider
 
     protected function client(): ReplicateClient
     {
-        return (new ReplicateClient(config('llmport.drivers.replicate.key')));
+        return new ReplicateClient(config('llmport.drivers.replicate.key'));
     }
 }

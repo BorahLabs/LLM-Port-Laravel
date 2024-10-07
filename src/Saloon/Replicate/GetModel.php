@@ -2,10 +2,8 @@
 
 namespace Borah\LLMPort\Saloon\Replicate;
 
-use BenBjurstrom\Replicate\Data\PredictionData;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
-use Saloon\Http\Response;
 
 class GetModel extends Request
 {
@@ -13,8 +11,7 @@ class GetModel extends Request
 
     public function __construct(
         protected string $id,
-    ) {
-    }
+    ) {}
 
     public function resolveEndpoint(): string
     {
