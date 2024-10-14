@@ -2,18 +2,25 @@
 
 namespace Borah\LLMPort\Drivers;
 
+use Borah\LLMPort\Contracts\CanChat;
 use Borah\LLMPort\Contracts\CanListModels;
+use Borah\LLMPort\Contracts\CanStreamChat;
+use Borah\LLMPort\Traits\HasHttpStreamingJsonParsing;
+use Borah\LLMPort\Utils\Stream;
 use Borah\LLMPort\ValueObjects\ChatMessage;
 use Borah\LLMPort\ValueObjects\ChatRequest;
 use Borah\LLMPort\ValueObjects\ChatResponse;
 use Borah\LLMPort\ValueObjects\LlmModel;
 use Borah\LLMPort\ValueObjects\ResponseUsage;
+use Closure;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 
-class Anthropic extends LlmProvider implements CanListModels
+class Anthropic extends LlmProvider implements CanListModels, CanChat, CanStreamChat
 {
+    use HasHttpStreamingJsonParsing;
+
     protected $models = [
         'claude-3-5-sonnet-20240620',
         'claude-3-opus-20240229',
@@ -29,30 +36,7 @@ class Anthropic extends LlmProvider implements CanListModels
 
     public function chat(ChatRequest $request): ChatResponse
     {
-        $systemMessage = $request->systemMessage();
-        $messages = $request->messagesWithoutSystem();
-
-        $params = [
-            'model' => $this->model()->name,
-            'messages' => array_map(fn (ChatMessage $message) => [
-                'role' => $message->role->value,
-                'content' => $message->content,
-            ], $messages),
-            'max_tokens' => $request->maxTokens ?? 512,
-        ];
-
-        if ($request->temperature) {
-            $params['temperature'] = $request->temperature;
-        }
-
-        if ($request->topP) {
-            $params['top_p'] = $request->topP;
-        }
-
-        if ($request->stop) {
-            $stop = is_array($request->stop) ? $request->stop : [$request->stop];
-            $params['stop_sequences'] = $stop;
-        }
+        $params = $this->buildParams($request);
 
         $response = $this->client()
             ->asJson()
@@ -71,6 +55,57 @@ class Anthropic extends LlmProvider implements CanListModels
         );
     }
 
+    public function chatStream(ChatRequest $request, Closure $onOutput): ChatResponse
+    {
+        $params = $this->buildParams($request);
+        $params['stream'] = true;
+
+        $response = $this->client()
+            ->asJson()
+            ->post('/messages', $params)
+            ->throw();
+
+        $stream = new Stream($response->toPsrResponse());
+        $id = null;
+        $content = '';
+        $inputTokens = 0;
+        $outputTokens = 0;
+        $stopReason = null;
+        foreach ($stream->chunks() as $chunk) {
+            if (data_get($chunk, 'message.id')) {
+                $id = data_get($chunk, 'message.id');
+            }
+
+            if (data_get($chunk, 'message.usage.input_tokens')) {
+                $inputTokens = data_get($chunk, 'message.usage.input_tokens');
+            }
+
+            if (data_get($chunk, 'message.usage.output_tokens')) {
+                $outputTokens = data_get($chunk, 'message.usage.output_tokens');
+            }
+
+            if (data_get($chunk, 'delta.stop_reason')) {
+                $stopReason = data_get($chunk, 'delta.stop_reason');
+            }
+
+            $chunkContent = data_get($chunk, 'delta.text') ?: data_get($chunk, 'content_block.text');
+            if (! empty($chunkContent)) {
+                $content .= $chunkContent;
+                $onOutput($chunkContent, $content);
+            }
+        }
+
+        return new ChatResponse(
+            id: $id,
+            content: $content,
+            finishReason: $stopReason ?? 'unknown',
+            usage: $inputTokens && $outputTokens ? new ResponseUsage(
+                inputTokens: $inputTokens,
+                outputTokens: $outputTokens,
+            ) : null,
+        );
+    }
+
     public function driver(): string
     {
         return 'anthropic';
@@ -84,5 +119,36 @@ class Anthropic extends LlmProvider implements CanListModels
             'content-type' => 'application/json',
         ])
             ->baseUrl('https://api.anthropic.com/v1');
+    }
+
+    protected function buildParams(ChatRequest $request): array
+    {
+        $systemMessage = $request->systemMessage();
+        $messages = $request->messagesWithoutSystem();
+
+        $params = [
+            'model' => $this->model()->name,
+            'messages' => array_map(fn (ChatMessage $message) => [
+                'role' => $message->role->value,
+                'content' => $message->content,
+            ], $messages),
+            'system' => $systemMessage,
+            'max_tokens' => $request->maxTokens ?? 512,
+        ];
+
+        if ($request->temperature) {
+            $params['temperature'] = $request->temperature;
+        }
+
+        if ($request->topP) {
+            $params['top_p'] = $request->topP;
+        }
+
+        if ($request->stop) {
+            $stop = is_array($request->stop) ? $request->stop : [$request->stop];
+            $params['stop_sequences'] = $stop;
+        }
+
+        return $params;
     }
 }

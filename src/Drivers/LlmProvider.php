@@ -20,7 +20,10 @@ abstract class LlmProvider implements CanChat
         return $this;
     }
 
-    abstract public function driver(): string;
+    public function driver(): ?string
+    {
+        return config('llmport.default');
+    }
 
     public function model(): LlmModel
     {

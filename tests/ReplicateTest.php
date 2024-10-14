@@ -11,7 +11,7 @@ test('can chat', function () {
 
     $response = $client->chat(new ChatRequest(
         messages: [
-            new ChatMessage(role: MessageRole::System, content: 'You are an assistant that just replies with Yes or No'),
+            new ChatMessage(role: MessageRole::System, content: 'You are an AI assistant that just replies with Yes or No'),
             new ChatMessage(role: MessageRole::User, content: 'Are you an AI model?'),
         ]
     ));

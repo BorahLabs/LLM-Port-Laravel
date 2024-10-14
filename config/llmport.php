@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'default' => env('LLMPORT_DEFAULT_DRIVER', 'openai'),
     'drivers' => [
         'openai' => [
             'key' => env('OPENAI_API_KEY'),
@@ -19,6 +20,7 @@ return [
         'replicate' => [
             'key' => env('REPLICATE_API_KEY'),
             'default_model' => env('REPLICATE_MODEL', 'meta/meta-llama-3-8b-instruct'),
+            'poll_interval' => env('REPLICATE_POLL_INTERVAL', 100000),
         ],
         'groq' => [
             'key' => env('GROQ_API_KEY'),
