@@ -33,7 +33,7 @@ class Stream
      *
      * @return \Generator Yields parsed JSON data from the response.
      *
-     * @throws GroqException If an error occurs during processing.
+     * @throws \Exception If an error occurs during processing.
      */
     public function chunks(): \Generator
     {

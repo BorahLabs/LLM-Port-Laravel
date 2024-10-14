@@ -3,11 +3,11 @@
 namespace Borah\LLMPort\Traits;
 
 use Closure;
-use GuzzleHttp\Psr7\Stream;
+use Psr\Http\Message\StreamInterface;
 
 trait HasHttpStreamingJsonParsing
 {
-    protected function getStreamedJson(Stream $response, Closure $onOutput)
+    protected function getStreamedJson(StreamInterface $response, Closure $onOutput)
     {
         $buffer = '';
         $jsonResponse = null;
