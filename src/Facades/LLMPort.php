@@ -6,9 +6,9 @@ use Borah\LLMPort\Drivers\LlmProvider;
 use Borah\LLMPort\ValueObjects\ChatRequest;
 use Borah\LLMPort\ValueObjects\ChatResponse;
 use Borah\LLMPort\ValueObjects\LlmModel;
+use Closure;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Facade;
-use Closure;
 
 /**
  * @method static void register(string $driver, string $provider)
@@ -19,6 +19,7 @@ use Closure;
  * @method static ChatResponse chat(ChatRequest $request)
  * @method static Collection models()
  * @method static ChatResponse chatStream(ChatRequest $request, Closure $onOutput): ChatResponse;
+ *
  * @see \Borah\LLMPort\LLMPort
  */
 class LLMPort extends Facade
