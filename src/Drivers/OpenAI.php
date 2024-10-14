@@ -14,7 +14,7 @@ use Illuminate\Support\Collection;
 use OpenAI as GlobalOpenAI;
 use OpenAI\Client as OpenAIClient;
 
-class OpenAI extends LlmProvider implements CanListModels, CanChat, CanStreamChat
+class OpenAI extends LlmProvider implements CanChat, CanListModels, CanStreamChat
 {
     public function models(): Collection
     {
@@ -71,7 +71,7 @@ class OpenAI extends LlmProvider implements CanListModels, CanChat, CanStreamCha
             if ($chunk->choices[0]->delta->content) {
                 $content .= $chunk->choices[0]->delta->content;
                 $onOutput($chunk->choices[0]->delta->content, $content);
-            } else if ($chunk->choices[0]->finishReason) {
+            } elseif ($chunk->choices[0]->finishReason) {
                 $finishReason = $chunk->choices[0]->finishReason;
             }
         }

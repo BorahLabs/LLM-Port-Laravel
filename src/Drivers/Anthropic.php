@@ -17,7 +17,7 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 
-class Anthropic extends LlmProvider implements CanListModels, CanChat, CanStreamChat
+class Anthropic extends LlmProvider implements CanChat, CanListModels, CanStreamChat
 {
     use HasHttpStreamingJsonParsing;
 
