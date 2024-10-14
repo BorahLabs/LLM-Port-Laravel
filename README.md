@@ -86,6 +86,9 @@ Or define a specific driver:
 
 ```php
 use Borah\LLMPort\Facades\LLMPort;
+use Borah\LLMPort\Enums\MessageRole;
+use Borah\LLMPort\ValueObjects\ChatMessage;
+use Borah\LLMPort\ValueObjects\ChatRequest;
 
 $response = LLMPort::driver('gemini')->chat(new ChatRequest(
     messages: [
@@ -110,6 +113,9 @@ You can also create your own driver:
 use Borah\LLMPort\Contracts\CanListModels;
 use Borah\LLMPort\Contracts\CanStreamChat;
 use Borah\LLMPort\Drivers\LlmProvider;
+use Borah\LLMPort\Enums\MessageRole;
+use Borah\LLMPort\ValueObjects\ChatMessage;
+use Borah\LLMPort\ValueObjects\ChatRequest;
 
 class MyAwesomeDriver extends LlmProvider implements CanListModels, CanStreamChat
 {
