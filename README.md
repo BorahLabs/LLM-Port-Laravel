@@ -82,6 +82,72 @@ echo $response->usage?->outputTokens; // 10
 echo $response->usage?->totalTokens(); // 15
 ```
 
+Or define a specific driver:
+
+```php
+use Borah\LLMPort\Facades\LLMPort;
+
+$response = LLMPort::driver('gemini')->chat(new ChatRequest(
+    messages: [
+        new ChatMessage(role: MessageRole::System, content: 'You are an AI assistant that just replies with Yes or No'),
+        new ChatMessage(role: MessageRole::User, content: 'Are you an AI model?'),
+    ]
+));
+```
+
+The supported drivers are:
+
+- `openai`: [OpenAI](https://openai.com/)
+- `gemini`: [Gemini](https://ai.google.dev/)
+- `anthropic`: [Anthropic](https://www.anthropic.com/)
+- `replicate`: [Replicate](https://replicate.com/)
+- `groq`: [Groq](https://groq.com/)
+- `nebius`: [Nebius AI](https://nebius.ai/)
+
+You can also create your own driver:
+
+```php
+use Borah\LLMPort\Contracts\CanListModels;
+use Borah\LLMPort\Contracts\CanStreamChat;
+use Borah\LLMPort\Drivers\LlmProvider;
+
+class MyAwesomeDriver extends LlmProvider implements CanListModels, CanStreamChat
+{
+    public function models(): Collection
+    {
+        return collect([
+          new LlmModel(name: 'model-1'),
+          new LlmModel(name: 'model-2'),
+        ]);
+    }
+
+    public function chat(ChatRequest $request): ChatResponse
+    {
+        // Your implementation
+    }
+
+    public function chatStream(ChatRequest $request, Closure $onOutput): ChatResponse
+    {
+        // Your implementation
+
+        // When you get the server event: `$onOutput($delta, $fullContent);`
+    }
+
+    public function driver(): ?string
+    {
+      return 'my_awesome_driver';
+    }
+}
+```
+
+```php
+use Borah\LLMPort\Facades\LLMPort;
+
+LLMPort::register('my_awesome_driver', MyAwesomeDriver::class);
+```
+
+> The key that you define in `driver()` should be registered as a driver in the `llmport.php` config file.
+
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
