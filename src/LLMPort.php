@@ -36,13 +36,13 @@ class LLMPort
             return new self::$providers[$driver];
         }
 
-        return match($driver) {
-            'openai' => new OpenAI(),
-            'gemini' => new Gemini(),
-            'anthropic' => new Anthropic(),
-            'replicate' => new Replicate(),
-            'groq' => new Groq(),
-            'nebius' => new Nebius(),
+        return match ($driver) {
+            'openai' => new OpenAI,
+            'gemini' => new Gemini,
+            'anthropic' => new Anthropic,
+            'replicate' => new Replicate,
+            'groq' => new Groq,
+            'nebius' => new Nebius,
             default => throw new \Exception("Driver {$driver} is not supported. Make sure to register the driver before using it."),
         };
     }
@@ -54,6 +54,6 @@ class LLMPort
 
     public static function __callStatic($method, $parameters)
     {
-        return (new static())->driver()->$method(...$parameters);
+        return (new self)->driver()->$method(...$parameters);
     }
 }

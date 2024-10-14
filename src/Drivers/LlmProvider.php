@@ -8,6 +8,7 @@ use Borah\LLMPort\ValueObjects\LlmModel;
 abstract class LlmProvider implements CanChat
 {
     protected ?LlmModel $model;
+
     protected ?string $driver = null;
 
     public function using(string|LlmModel $model): static
