@@ -82,6 +82,22 @@ echo $response->usage?->outputTokens; // 10
 echo $response->usage?->totalTokens(); // 15
 ```
 
+You can also choose the model to use:
+
+```php
+use Borah\LLMPort\Facades\LLMPort;
+use Borah\LLMPort\Enums\MessageRole;
+use Borah\LLMPort\ValueObjects\ChatMessage;
+use Borah\LLMPort\ValueObjects\ChatRequest;
+
+$response = LLMPort::driver('openai')->using('gpt-4o-mini')->chat(new ChatRequest(
+    messages: [
+        new ChatMessage(role: MessageRole::System, content: 'You are an AI assistant that just replies with Yes or No'),
+        new ChatMessage(role: MessageRole::User, content: 'Are you an AI model?'),
+    ]
+));
+```
+
 Or define a specific driver:
 
 ```php
