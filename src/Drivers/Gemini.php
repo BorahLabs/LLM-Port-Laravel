@@ -3,7 +3,6 @@
 namespace Borah\LLMPort\Drivers;
 
 use Borah\LLMPort\Contracts\CanChat;
-use Borah\LLMPort\Contracts\Stream;
 use Borah\LLMPort\Contracts\CanListModels;
 use Borah\LLMPort\Contracts\CanStreamChat;
 use Borah\LLMPort\Enums\MessageRole;
@@ -18,7 +17,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
-class Gemini extends LlmProvider implements CanListModels, CanChat, CanStreamChat
+class Gemini extends LlmProvider implements CanChat, CanListModels, CanStreamChat
 {
     use HasHttpStreamingJsonParsing;
 

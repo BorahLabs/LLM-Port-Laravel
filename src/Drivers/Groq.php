@@ -13,7 +13,7 @@ use Closure;
 use Illuminate\Support\Collection;
 use LucianoTonet\GroqPHP\Groq as GroqClient;
 
-class Groq extends LlmProvider implements CanListModels, CanChat, CanStreamChat
+class Groq extends LlmProvider implements CanChat, CanListModels, CanStreamChat
 {
     public function models(): Collection
     {
@@ -68,7 +68,7 @@ class Groq extends LlmProvider implements CanListModels, CanChat, CanStreamChat
             if (isset($chunk['choices'][0]['delta']['content'])) {
                 $content .= $chunk['choices'][0]['delta']['content'];
                 $onOutput($chunk['choices'][0]['delta']['content'], $content);
-            } else if (isset($chunk['choices'][0]['finish_reason'])) {
+            } elseif (isset($chunk['choices'][0]['finish_reason'])) {
                 $finishReason = $chunk['choices'][0]['finish_reason'];
             }
         }

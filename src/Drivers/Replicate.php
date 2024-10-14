@@ -5,14 +5,11 @@ namespace Borah\LLMPort\Drivers;
 use BenBjurstrom\Replicate\Replicate as ReplicateClient;
 use Borah\LLMPort\Contracts\CanChat;
 use Borah\LLMPort\Saloon\Replicate\GetModel;
-use Borah\LLMPort\Utils\Stream;
 use Borah\LLMPort\ValueObjects\ChatMessage;
 use Borah\LLMPort\ValueObjects\ChatRequest;
 use Borah\LLMPort\ValueObjects\ChatResponse;
 use Borah\LLMPort\ValueObjects\ResponseUsage;
-use Closure;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
 
 class Replicate extends LlmProvider implements CanChat
 {
@@ -73,7 +70,7 @@ class Replicate extends LlmProvider implements CanChat
         ];
 
         if ($request->stop) {
-            $data['stop_sequences'] = is_array($request->stop) ? join(',', $request->stop) : $request->stop;
+            $data['stop_sequences'] = is_array($request->stop) ? implode(',', $request->stop) : $request->stop;
         }
 
         return [$data, $version];
