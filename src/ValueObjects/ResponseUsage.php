@@ -5,6 +5,7 @@ namespace Borah\LLMPort\ValueObjects;
 class ResponseUsage
 {
     public function __construct(
+        public int $processingTimeInMs,
         public int $inputTokens,
         public int $outputTokens,
     ) {}

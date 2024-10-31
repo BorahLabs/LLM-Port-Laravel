@@ -16,6 +16,7 @@ class Replicate extends LlmProvider implements CanChat
 {
     public function chat(ChatRequest $request): ChatResponse
     {
+        $start = microtime(true);
         [$data, $version] = $this->buildParams($request);
         $prediction = $this->client()->predictions()->create($version, $data);
 
@@ -29,17 +30,20 @@ class Replicate extends LlmProvider implements CanChat
 
         $output = is_array($prediction->output) ? implode('', $prediction->output) : $prediction->output;
 
+        $processingTimeInMs = (microtime(true) - $start) * 1000;
+
         $response = new ChatResponse(
             id: $prediction->id,
             content: mb_trim($output),
             finishReason: 'unknown',
             usage: new ResponseUsage(
+                processingTimeInMs: intval($processingTimeInMs),
                 inputTokens: $prediction->metrics['input_token_count'],
                 outputTokens: $prediction->metrics['output_token_count'],
             ),
         );
 
-        LLMChatResponseReceived::dispatch($request, $response);
+        LLMChatResponseReceived::dispatch($this->driver(), $this->model(), $request, $response);
 
         return $response;
     }

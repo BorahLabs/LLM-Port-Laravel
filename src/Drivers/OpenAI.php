@@ -25,6 +25,7 @@ class OpenAI extends LlmProvider implements CanChat, CanListModels, CanStreamCha
 
     public function chat(ChatRequest $request): ChatResponse
     {
+        $start = microtime(true);
         $response = $this->client()->chat()->create([
             'model' => $this->model()->name,
             'messages' => $request->messages(),
@@ -36,23 +37,27 @@ class OpenAI extends LlmProvider implements CanChat, CanListModels, CanStreamCha
             'frequency_penalty' => $request->frequencyPenalty,
         ]);
 
+        $processingTimeInMs = (microtime(true) - $start) * 1000;
+
         $response = new ChatResponse(
             id: $response->id,
             content: $response->choices[0]->message->content,
             finishReason: $response->choices[0]->finishReason,
             usage: new ResponseUsage(
+                processingTimeInMs: intval($processingTimeInMs),
                 inputTokens: $response->usage->promptTokens,
                 outputTokens: $response->usage->completionTokens,
             ),
         );
 
-        LLMChatResponseReceived::dispatch($request, $response);
+        LLMChatResponseReceived::dispatch($this->driver(), $this->model(), $request, $response);
 
         return $response;
     }
 
     public function chatStream(ChatRequest $request, Closure $onOutput): ChatResponse
     {
+        $start = microtime(true);
         $response = $this->client()->chat()->createStreamed([
             'model' => $this->model()->name,
             'messages' => $request->messages(),
@@ -62,33 +67,52 @@ class OpenAI extends LlmProvider implements CanChat, CanListModels, CanStreamCha
             'stop' => $request->stop,
             'response_format' => $request->responseFormat,
             'frequency_penalty' => $request->frequencyPenalty,
+            'stream_options' => [
+                'include_usage' => true,
+            ],
         ]);
 
         $id = null;
         $content = null;
         $finishReason = null;
+        $inputTokens = null;
+        $outputTokens = null;
+        $processingTimeInMs = null;
 
         foreach ($response as $chunk) {
             if (is_null($id)) {
                 $id = $chunk->id;
             }
 
-            if ($chunk->choices[0]->delta->content) {
-                $content .= $chunk->choices[0]->delta->content;
-                $onOutput($chunk->choices[0]->delta->content, $content);
-            } elseif ($chunk->choices[0]->finishReason) {
-                $finishReason = $chunk->choices[0]->finishReason;
+            if (! empty($chunk->choices)) {
+                if ($chunk->choices[0]->delta->content) {
+                    $content .= $chunk->choices[0]->delta->content;
+                    $onOutput($chunk->choices[0]->delta->content, $content);
+                } elseif ($chunk->choices[0]->finishReason) {
+                    $finishReason = $chunk->choices[0]->finishReason;
+                }
+            }
+
+            if ($chunk->usage) {
+                $inputTokens = $chunk->usage->promptTokens;
+                $outputTokens = $chunk->usage->completionTokens;
             }
         }
+
+        $processingTimeInMs = (microtime(true) - $start) * 1000;
 
         $response = new ChatResponse(
             id: $id,
             content: $content,
             finishReason: $finishReason ?? 'unknown',
-            usage: null,
+            usage: new ResponseUsage(
+                processingTimeInMs: intval($processingTimeInMs),
+                inputTokens: $inputTokens,
+                outputTokens: $outputTokens,
+            ),
         );
 
-        LLMChatResponseReceived::dispatch($request, $response);
+        LLMChatResponseReceived::dispatch($this->driver(), $this->model(), $request, $response);
 
         return $response;
     }

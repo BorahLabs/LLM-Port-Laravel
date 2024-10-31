@@ -37,6 +37,7 @@ class Anthropic extends LlmProvider implements CanChat, CanListModels, CanStream
 
     public function chat(ChatRequest $request): ChatResponse
     {
+        $start = microtime(true);
         $params = $this->buildParams($request);
 
         $response = $this->client()
@@ -45,23 +46,27 @@ class Anthropic extends LlmProvider implements CanChat, CanListModels, CanStream
             ->throw()
             ->json();
 
+        $processingTimeInMs = (microtime(true) - $start) * 1000;
+
         $response = new ChatResponse(
             id: $response['id'],
             content: $response['content'][0]['text'],
             finishReason: $response['stop_reason'],
             usage: new ResponseUsage(
+                processingTimeInMs: intval($processingTimeInMs),
                 inputTokens: $response['usage']['input_tokens'],
                 outputTokens: $response['usage']['output_tokens'],
             ),
         );
 
-        LLMChatResponseReceived::dispatch($request, $response);
+        LLMChatResponseReceived::dispatch($this->driver(), $this->model(), $request, $response);
 
         return $response;
     }
 
     public function chatStream(ChatRequest $request, Closure $onOutput): ChatResponse
     {
+        $start = microtime(true);
         $params = $this->buildParams($request);
         $params['stream'] = true;
 
@@ -100,17 +105,20 @@ class Anthropic extends LlmProvider implements CanChat, CanListModels, CanStream
             }
         }
 
+        $processingTimeInMs = (microtime(true) - $start) * 1000;
+
         $response = new ChatResponse(
             id: $id,
             content: $content,
             finishReason: $stopReason ?? 'unknown',
-            usage: $inputTokens && $outputTokens ? new ResponseUsage(
+            usage: new ResponseUsage(
+                processingTimeInMs: intval($processingTimeInMs),
                 inputTokens: $inputTokens,
                 outputTokens: $outputTokens,
-            ) : null,
+            ),
         );
 
-        LLMChatResponseReceived::dispatch($request, $response);
+        LLMChatResponseReceived::dispatch($this->driver(), $this->model(), $request, $response);
 
         return $response;
     }

@@ -35,6 +35,7 @@ class Gemini extends LlmProvider implements CanChat, CanListModels, CanStreamCha
 
     public function chat(ChatRequest $request): ChatResponse
     {
+        $start = microtime(true);
         $params = $this->buildParams($request);
 
         $response = $this->client()
@@ -44,23 +45,26 @@ class Gemini extends LlmProvider implements CanChat, CanListModels, CanStreamCha
             ->throw()
             ->json();
 
+        $processingTimeInMs = (microtime(true) - $start) * 1000;
         $response = new ChatResponse(
             id: Str::uuid(),
             content: $response['candidates'][0]['content']['parts'][0]['text'],
             finishReason: mb_strtolower($response['candidates'][0]['finishReason']),
             usage: new ResponseUsage(
+                processingTimeInMs: intval($processingTimeInMs),
                 inputTokens: $response['usageMetadata']['promptTokenCount'],
                 outputTokens: $response['usageMetadata']['candidatesTokenCount'],
             ),
         );
 
-        LLMChatResponseReceived::dispatch($request, $response);
+        LLMChatResponseReceived::dispatch($this->driver(), $this->model(), $request, $response);
 
         return $response;
     }
 
     public function chatStream(ChatRequest $request, Closure $onOutput): ChatResponse
     {
+        $start = microtime(true);
         $params = $this->buildParams($request);
 
         $response = $this->client()
@@ -79,17 +83,20 @@ class Gemini extends LlmProvider implements CanChat, CanListModels, CanStreamCha
             $onOutput($jsonResponse['candidates'][0]['content']['parts'][0]['text'], $fullContent);
         });
 
+        $processingTimeInMs = (microtime(true) - $start) * 1000;
+
         $response = new ChatResponse(
             id: Str::uuid(),
             content: $fullContent,
             finishReason: mb_strtolower($jsonResponse['candidates'][0]['finishReason']),
             usage: new ResponseUsage(
+                processingTimeInMs: intval($processingTimeInMs),
                 inputTokens: $jsonResponse['usageMetadata']['promptTokenCount'],
                 outputTokens: $jsonResponse['usageMetadata']['candidatesTokenCount'],
             ),
         );
 
-        LLMChatResponseReceived::dispatch($request, $response);
+        LLMChatResponseReceived::dispatch($this->driver(), $this->model(), $request, $response);
 
         return $response;
     }
