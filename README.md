@@ -1,10 +1,5 @@
 # LLM Port
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/borahlabs/llm-port-laravel.svg?style=flat-square)](https://packagist.org/packages/borah/llm-port-laravel)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/borahlabs/llm-port-laravel/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/borahlabs/llm-port-laravel/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/borahlabs/llm-port-laravel/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/borahlabs/llm-port-laravel/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/borahlabs/llm-port-laravel.svg?style=flat-square)](https://packagist.org/packages/borah/llm-port-laravel)
-
 Wrapper around the most popular LLMs that allows drop-in replacement of large language models in Laravel.
 
 ## Installation
