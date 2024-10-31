@@ -6,6 +6,7 @@ use Borah\LLMPort\Contracts\CanChat;
 use Borah\LLMPort\Contracts\CanListModels;
 use Borah\LLMPort\Contracts\CanStreamChat;
 use Borah\LLMPort\Enums\MessageRole;
+use Borah\LLMPort\Events\LLMChatResponseReceived;
 use Borah\LLMPort\Traits\HasHttpStreamingJsonParsing;
 use Borah\LLMPort\ValueObjects\ChatRequest;
 use Borah\LLMPort\ValueObjects\ChatResponse;
@@ -43,7 +44,7 @@ class Gemini extends LlmProvider implements CanChat, CanListModels, CanStreamCha
             ->throw()
             ->json();
 
-        return new ChatResponse(
+        $response = new ChatResponse(
             id: Str::uuid(),
             content: $response['candidates'][0]['content']['parts'][0]['text'],
             finishReason: mb_strtolower($response['candidates'][0]['finishReason']),
@@ -52,6 +53,10 @@ class Gemini extends LlmProvider implements CanChat, CanListModels, CanStreamCha
                 outputTokens: $response['usageMetadata']['candidatesTokenCount'],
             ),
         );
+
+        LLMChatResponseReceived::dispatch($request, $response);
+
+        return $response;
     }
 
     public function chatStream(ChatRequest $request, Closure $onOutput): ChatResponse
@@ -74,7 +79,7 @@ class Gemini extends LlmProvider implements CanChat, CanListModels, CanStreamCha
             $onOutput($jsonResponse['candidates'][0]['content']['parts'][0]['text'], $fullContent);
         });
 
-        return new ChatResponse(
+        $response = new ChatResponse(
             id: Str::uuid(),
             content: $fullContent,
             finishReason: mb_strtolower($jsonResponse['candidates'][0]['finishReason']),
@@ -83,6 +88,10 @@ class Gemini extends LlmProvider implements CanChat, CanListModels, CanStreamCha
                 outputTokens: $jsonResponse['usageMetadata']['candidatesTokenCount'],
             ),
         );
+
+        LLMChatResponseReceived::dispatch($request, $response);
+
+        return $response;
     }
 
     public function driver(): string

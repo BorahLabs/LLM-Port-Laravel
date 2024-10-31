@@ -2,11 +2,13 @@
 
 use Borah\LLMPort\Drivers\Gemini;
 use Borah\LLMPort\Enums\MessageRole;
+use Borah\LLMPort\Events\LLMChatResponseReceived;
 use Borah\LLMPort\ValueObjects\ChatMessage;
 use Borah\LLMPort\ValueObjects\ChatRequest;
 use Borah\LLMPort\ValueObjects\LlmModel;
 use Borah\LLMPort\ValueObjects\ResponseUsage;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Event;
 
 test('can get models', function () {
     $client = new Gemini;
@@ -19,6 +21,8 @@ test('can get models', function () {
 });
 
 test('can chat', function () {
+    Event::fake();
+
     $client = new Gemini;
 
     $response = $client->chat(new ChatRequest(
@@ -32,9 +36,13 @@ test('can chat', function () {
     expect($response->usage)->toBeInstanceOf(ResponseUsage::class);
     expect($response->usage->inputTokens)->toBeInt()->toBeGreaterThan(0);
     expect($response->usage->outputTokens)->toBeInt()->toBeGreaterThan(0);
+
+    Event::assertDispatched(LLMChatResponseReceived::class);
 });
 
 test('can chat stream', function () {
+    Event::fake();
+
     $client = new Gemini;
 
     $streamedContent = '';
@@ -54,4 +62,6 @@ test('can chat stream', function () {
 
     expect($response->content)->toContain('Yes')->toBe($streamedContent);
     expect($streams)->toBeGreaterThan(0);
+
+    Event::assertDispatched(LLMChatResponseReceived::class);
 });

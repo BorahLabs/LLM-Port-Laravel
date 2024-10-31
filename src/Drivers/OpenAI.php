@@ -5,6 +5,7 @@ namespace Borah\LLMPort\Drivers;
 use Borah\LLMPort\Contracts\CanChat;
 use Borah\LLMPort\Contracts\CanListModels;
 use Borah\LLMPort\Contracts\CanStreamChat;
+use Borah\LLMPort\Events\LLMChatResponseReceived;
 use Borah\LLMPort\ValueObjects\ChatRequest;
 use Borah\LLMPort\ValueObjects\ChatResponse;
 use Borah\LLMPort\ValueObjects\LlmModel;
@@ -35,7 +36,7 @@ class OpenAI extends LlmProvider implements CanChat, CanListModels, CanStreamCha
             'frequency_penalty' => $request->frequencyPenalty,
         ]);
 
-        return new ChatResponse(
+        $response = new ChatResponse(
             id: $response->id,
             content: $response->choices[0]->message->content,
             finishReason: $response->choices[0]->finishReason,
@@ -44,6 +45,10 @@ class OpenAI extends LlmProvider implements CanChat, CanListModels, CanStreamCha
                 outputTokens: $response->usage->completionTokens,
             ),
         );
+
+        LLMChatResponseReceived::dispatch($request, $response);
+
+        return $response;
     }
 
     public function chatStream(ChatRequest $request, Closure $onOutput): ChatResponse
@@ -76,12 +81,16 @@ class OpenAI extends LlmProvider implements CanChat, CanListModels, CanStreamCha
             }
         }
 
-        return new ChatResponse(
+        $response = new ChatResponse(
             id: $id,
             content: $content,
             finishReason: $finishReason ?? 'unknown',
             usage: null,
         );
+
+        LLMChatResponseReceived::dispatch($request, $response);
+
+        return $response;
     }
 
     public function driver(): string

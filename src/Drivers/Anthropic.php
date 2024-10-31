@@ -5,6 +5,7 @@ namespace Borah\LLMPort\Drivers;
 use Borah\LLMPort\Contracts\CanChat;
 use Borah\LLMPort\Contracts\CanListModels;
 use Borah\LLMPort\Contracts\CanStreamChat;
+use Borah\LLMPort\Events\LLMChatResponseReceived;
 use Borah\LLMPort\Traits\HasHttpStreamingJsonParsing;
 use Borah\LLMPort\Utils\Stream;
 use Borah\LLMPort\ValueObjects\ChatMessage;
@@ -44,7 +45,7 @@ class Anthropic extends LlmProvider implements CanChat, CanListModels, CanStream
             ->throw()
             ->json();
 
-        return new ChatResponse(
+        $response = new ChatResponse(
             id: $response['id'],
             content: $response['content'][0]['text'],
             finishReason: $response['stop_reason'],
@@ -53,6 +54,10 @@ class Anthropic extends LlmProvider implements CanChat, CanListModels, CanStream
                 outputTokens: $response['usage']['output_tokens'],
             ),
         );
+
+        LLMChatResponseReceived::dispatch($request, $response);
+
+        return $response;
     }
 
     public function chatStream(ChatRequest $request, Closure $onOutput): ChatResponse
@@ -95,7 +100,7 @@ class Anthropic extends LlmProvider implements CanChat, CanListModels, CanStream
             }
         }
 
-        return new ChatResponse(
+        $response = new ChatResponse(
             id: $id,
             content: $content,
             finishReason: $stopReason ?? 'unknown',
@@ -104,6 +109,10 @@ class Anthropic extends LlmProvider implements CanChat, CanListModels, CanStream
                 outputTokens: $outputTokens,
             ) : null,
         );
+
+        LLMChatResponseReceived::dispatch($request, $response);
+
+        return $response;
     }
 
     public function driver(): string

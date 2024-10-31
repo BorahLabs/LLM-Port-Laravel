@@ -5,6 +5,7 @@ namespace Borah\LLMPort\Drivers;
 use Borah\LLMPort\Contracts\CanChat;
 use Borah\LLMPort\Contracts\CanListModels;
 use Borah\LLMPort\Contracts\CanStreamChat;
+use Borah\LLMPort\Events\LLMChatResponseReceived;
 use Borah\LLMPort\ValueObjects\ChatRequest;
 use Borah\LLMPort\ValueObjects\ChatResponse;
 use Borah\LLMPort\ValueObjects\LlmModel;
@@ -34,12 +35,16 @@ class Groq extends LlmProvider implements CanChat, CanListModels, CanStreamChat
             'frequency_penalty' => $request->frequencyPenalty,
         ]);
 
-        return new ChatResponse(
+        $response = new ChatResponse(
             id: $response['id'],
             content: $response['choices'][0]['message']['content'],
             finishReason: $response['choices'][0]['finish_reason'],
             usage: new ResponseUsage(inputTokens: $response['usage']['prompt_tokens'], outputTokens: $response['usage']['completion_tokens']),
         );
+
+        LLMChatResponseReceived::dispatch($request, $response);
+
+        return $response;
     }
 
     public function chatStream(ChatRequest $request, Closure $onOutput): ChatResponse
@@ -73,12 +78,16 @@ class Groq extends LlmProvider implements CanChat, CanListModels, CanStreamChat
             }
         }
 
-        return new ChatResponse(
+        $response = new ChatResponse(
             id: $id,
             content: $content,
             finishReason: $finishReason,
             usage: null,
         );
+
+        LLMChatResponseReceived::dispatch($request, $response);
+
+        return $response;
     }
 
     public function driver(): string

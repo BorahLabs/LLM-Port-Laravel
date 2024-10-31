@@ -4,6 +4,7 @@ namespace Borah\LLMPort\Drivers;
 
 use BenBjurstrom\Replicate\Replicate as ReplicateClient;
 use Borah\LLMPort\Contracts\CanChat;
+use Borah\LLMPort\Events\LLMChatResponseReceived;
 use Borah\LLMPort\Saloon\Replicate\GetModel;
 use Borah\LLMPort\ValueObjects\ChatMessage;
 use Borah\LLMPort\ValueObjects\ChatRequest;
@@ -28,7 +29,7 @@ class Replicate extends LlmProvider implements CanChat
 
         $output = is_array($prediction->output) ? implode('', $prediction->output) : $prediction->output;
 
-        return new ChatResponse(
+        $response = new ChatResponse(
             id: $prediction->id,
             content: mb_trim($output),
             finishReason: 'unknown',
@@ -37,6 +38,10 @@ class Replicate extends LlmProvider implements CanChat
                 outputTokens: $prediction->metrics['output_token_count'],
             ),
         );
+
+        LLMChatResponseReceived::dispatch($request, $response);
+
+        return $response;
     }
 
     public function driver(): string
