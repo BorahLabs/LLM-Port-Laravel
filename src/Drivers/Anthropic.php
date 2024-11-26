@@ -59,7 +59,7 @@ class Anthropic extends LlmProvider implements CanChat, CanListModels, CanStream
             ),
         );
 
-        LLMChatResponseReceived::dispatch($this->driver(), $this->model(), $request, $response);
+        LLMChatResponseReceived::dispatch($this->driver(), $this->model(), $request, $response, $request->metadata);
 
         return $response;
     }
@@ -118,7 +118,7 @@ class Anthropic extends LlmProvider implements CanChat, CanListModels, CanStream
             ),
         );
 
-        LLMChatResponseReceived::dispatch($this->driver(), $this->model(), $request, $response);
+        LLMChatResponseReceived::dispatch($this->driver(), $this->model(), $request, $response, $request->metadata);
 
         return $response;
     }

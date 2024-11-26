@@ -21,5 +21,6 @@ class LLMChatResponseReceived
         public readonly LlmModel $model,
         public readonly ChatRequest $request,
         public readonly ChatResponse $response,
+        public readonly ?array $metadata = null,
     ) {}
 }

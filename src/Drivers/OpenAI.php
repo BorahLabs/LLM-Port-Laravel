@@ -50,7 +50,7 @@ class OpenAI extends LlmProvider implements CanChat, CanListModels, CanStreamCha
             ),
         );
 
-        LLMChatResponseReceived::dispatch($this->driver(), $this->model(), $request, $response);
+        LLMChatResponseReceived::dispatch($this->driver(), $this->model(), $request, $response, $request->metadata);
 
         return $response;
     }
@@ -112,7 +112,7 @@ class OpenAI extends LlmProvider implements CanChat, CanListModels, CanStreamCha
             ),
         );
 
-        LLMChatResponseReceived::dispatch($this->driver(), $this->model(), $request, $response);
+        LLMChatResponseReceived::dispatch($this->driver(), $this->model(), $request, $response, $request->metadata);
 
         return $response;
     }

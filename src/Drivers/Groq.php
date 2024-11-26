@@ -49,7 +49,7 @@ class Groq extends LlmProvider implements CanChat, CanListModels, CanStreamChat
             ),
         );
 
-        LLMChatResponseReceived::dispatch($this->driver(), $this->model(), $request, $response);
+        LLMChatResponseReceived::dispatch($this->driver(), $this->model(), $request, $response, $request->metadata);
 
         return $response;
     }
@@ -109,7 +109,7 @@ class Groq extends LlmProvider implements CanChat, CanListModels, CanStreamChat
             ),
         );
 
-        LLMChatResponseReceived::dispatch($this->driver(), $this->model(), $request, $response);
+        LLMChatResponseReceived::dispatch($this->driver(), $this->model(), $request, $response, $request->metadata);
 
         return $response;
     }

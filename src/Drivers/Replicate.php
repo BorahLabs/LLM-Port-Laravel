@@ -43,7 +43,7 @@ class Replicate extends LlmProvider implements CanChat
             ),
         );
 
-        LLMChatResponseReceived::dispatch($this->driver(), $this->model(), $request, $response);
+        LLMChatResponseReceived::dispatch($this->driver(), $this->model(), $request, $response, $request->metadata);
 
         return $response;
     }

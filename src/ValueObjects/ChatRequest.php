@@ -17,6 +17,7 @@ class ChatRequest
         public readonly string|array|null $stop = null,
         public readonly ?string $responseFormat = null,
         public readonly float|int|null $frequencyPenalty = null,
+        public readonly ?array $metadata = null,
     ) {
         //
     }
