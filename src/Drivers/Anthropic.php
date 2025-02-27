@@ -23,6 +23,9 @@ class Anthropic extends LlmProvider implements CanChat, CanListModels, CanStream
     use HasHttpStreamingJsonParsing;
 
     protected $models = [
+        'claude-3-7-sonnet-latest',
+        'claude-3-5-sonnet-latest',
+        'claude-3-5-haiku-latest',
         'claude-3-5-sonnet-20240620',
         'claude-3-opus-20240229',
         'claude-3-sonnet-20240229',
